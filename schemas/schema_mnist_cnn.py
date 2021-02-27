@@ -62,7 +62,6 @@ class CnnMnistSchema(MnistSchema):
         else:
             loss, acc = self._run_batches_valid(set_name)
 
-        print(loss, acc)
         self.metrics[set_name] = dict(loss=loss, accuracy=acc)
 
     def _run_batches_train(self, set_name):
