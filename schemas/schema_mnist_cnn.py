@@ -38,8 +38,8 @@ class CnnMnistSchema(MnistSchema):
     @staticmethod
     def list_hparams():
         return MnistSchema.list_hparams() + [
-            dict(name='epochs', type=int, default=14),
-            dict(name='lr', type=float, default=1.0),
+            dict(name='epochs', type=int, default=20),
+            dict(name='lr', type=float, default=1.0, range=(0.4, 2.0, 0.1)),
             dict(name='gamma', type=float, default=0.99),
         ]
 

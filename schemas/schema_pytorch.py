@@ -15,7 +15,7 @@ class TorchSchema(Schema):
     def list_hparams():
         return Schema.list_hparams() + [
             dict(name='logdir', type=Path, default=Path() / 'runs'),
-            dict(name='seed', type=int, default=42)
+            dict(name='seed', type=int, default=42, range=(42, 52))
         ]
 
     def __init__(self, flags={}):
