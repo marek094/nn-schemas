@@ -1,4 +1,3 @@
-from unittest import loader
 from schemas.schema_pytorch import TorchSchema
 
 from torchvision import datasets, transforms
