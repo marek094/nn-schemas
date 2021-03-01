@@ -70,6 +70,7 @@ class CnnCifar10Schema(Cifar10Schema):
 
     def prepare_model(self):
         self.model = self.make_cnn(self.flags['width'], num_classes=10)
+        self.model = self.model.to(self.dev)
 
     def prepare_criterium(self):
         self.optim = T.optim.Adam(self.model.parameters(),

@@ -13,7 +13,7 @@ class Cifar10Schema(TorchSchema):
     def list_hparams():
         return TorchSchema.list_hparams() + [
             dict(name='batch_size', type=int, default=128),
-            dict(name='noise', type=int, default=0)
+            dict(name='noise', type=int, default=0, range=(0, 30, 10))
         ]
 
     def __init__(self, flags={}) -> None:
