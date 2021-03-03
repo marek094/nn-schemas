@@ -2,7 +2,8 @@ from schemas.schema_cifar10 import Cifar10Schema
 
 import torch as T
 import torch.nn as nn
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import LambdaLR
+import math
 
 
 class CnnCifar10Schema(Cifar10Schema):
@@ -60,7 +61,7 @@ class CnnCifar10Schema(Cifar10Schema):
         return Cifar10Schema.list_hparams() + [
             dict(name='epochs', type=int, default=80),
             dict(name='lr', type=float, default=0.1, range=(0.01, 0.21, 0.01)),
-            dict(name='weight_decay', type=float, default=5e-4),
+            dict(name='weight_decay', type=float, default=0.0),
             dict(name='lr_decay', type=int, default=1000),
             dict(name='width', type=int, default=10, range=(2, 80, 4)),
         ]
@@ -73,15 +74,19 @@ class CnnCifar10Schema(Cifar10Schema):
         self.model = self.model.to(self.dev)
 
     def prepare_criterium(self):
-        self.optim = T.optim.Adam(self.model.parameters(),
-                                  lr=self.flags['lr'],
-                                  weight_decay=self.flags['weight_decay'])
+        self.optim = T.optim.SGD(self.model.parameters(),
+                                 lr=self.flags['lr'],
+                                 momentum=0.9,
+                                 weight_decay=self.flags['weight_decay'])
 
-        self.scheduler = StepLR(self.optim,
-                                step_size=self.flags['lr_decay'],
-                                gamma=0.1)
+        trainset_size = 50_000
+        lr_lambda = lambda epoch: self.flags['lr'] / math.sqrt(1 + (
+            epoch * trainset_size) // 512)
+        self.scheduler = LambdaLR(self.optim,
+                                  lr_lambda=lr_lambda,
+                                  last_epoch=-1)
 
-        self.crit = nn.CrossEntropyLoss()
+        self.crit = nn.CrossEntropyLoss().to(self.dev)
 
     def epoch_range(self):
         return range(self.flags['epochs'])
@@ -108,6 +113,7 @@ class CnnCifar10Schema(Cifar10Schema):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
+        self.scheduler.step()
         return dict(loss=train_loss / total, acc=100. * correct / total)
 
     def _run_batches_valid(self, set_name):
